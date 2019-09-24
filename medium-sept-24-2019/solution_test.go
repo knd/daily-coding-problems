@@ -2,23 +2,55 @@ package main
 
 import (
 	"fmt"
+	"strings"
 	"testing"
 
-	"github.com/knd/daily-coding-problems/medium-sept-24-2019/node"
 	"github.com/stretchr/testify/assert"
 )
 
-func main() {
-	leftNode := &node.Node{left: nil, right: nil, value: "leftNode"}
-	rightNode := &node.Node{left: nil, right: nil, value: "rightNode"}
-	rootNode := &node.Node{left: leftNode, right: rightNode, value: "root"}
-
-	fmt.Printf("Root=%s\n", rootNode.value)
-	fmt.Printf("Left=%s\n", rootNode.left.value)
-	fmt.Printf("Right=%s\n", rootNode.right.value)
+// Node represents a node in a tree
+type Node struct {
+	left  *Node
+	right *Node
+	value string
 }
 
-func testFullTree(t *testing.T) {
+const NilValue string = "NIL" // change this to special value
+
+// Serialize returns serialized string of tree
+func serialize(root *Node) string {
+	if root == nil {
+		return NilValue
+	}
+
+	return fmt.Sprintf("%s %s %s", root.value, serialize(root.left), serialize(root.right))
+}
+
+// Deserialize returns binary tree from serialized form
+func deserialize(serializedTree string) *Node {
+	tokens := tokenize(serializedTree)
+
+	root, _ := deserializeFromTokens(tokens, 0)
+	return root
+}
+
+func deserializeFromTokens(tokens []string, index int) (*Node, int) {
+	if index >= len(tokens) || tokens[index] == NilValue {
+		return nil, index
+	}
+
+	root := &Node{value: tokens[index]}
+	root.left, index = deserializeFromTokens(tokens, index+1)
+	root.right, index = deserializeFromTokens(tokens, index+1)
+
+	return root, index
+}
+
+func tokenize(serializedTree string) []string {
+	return strings.Split(serializedTree, " ")
+}
+
+func TestFullTree(t *testing.T) {
 	assert := assert.New(t)
 	root := &Node{
 		value: "root",
@@ -43,6 +75,7 @@ func testFullTree(t *testing.T) {
 	}
 
 	serializedTree := serialize(root)
+	fmt.Printf("Serialized tree: %s\n", serializedTree)
 
 	t.Run("root has correct value", func(t *testing.T) {
 		assert.Equal("root", deserialize(serializedTree).value)
@@ -93,7 +126,7 @@ func testFullTree(t *testing.T) {
 	})
 }
 
-func testUnbalancedTree(t *testing.T) {
+func TestUnbalancedTree(t *testing.T) {
 	assert := assert.New(t)
 	root := &Node{
 		value: "root",
@@ -109,6 +142,7 @@ func testUnbalancedTree(t *testing.T) {
 	}
 
 	serializedTree := serialize(root)
+	fmt.Printf("Serialized tree: %s\n", serializedTree)
 
 	t.Run("root has correct value", func(t *testing.T) {
 		assert.Equal("root", deserialize(serializedTree).value)
@@ -141,11 +175,12 @@ func testUnbalancedTree(t *testing.T) {
 	})
 }
 
-func testSingleNodeTree(t *testing.T) {
+func TestSingleNodeTree(t *testing.T) {
 	assert := assert.New(t)
 	root := &Node{value: "root"}
 
 	serializedTree := serialize(root)
+	fmt.Printf("Serialized tree: %s\n", serializedTree)
 
 	t.Run("root has correct value", func(t *testing.T) {
 		assert.Equal("root", deserialize(serializedTree).value)
