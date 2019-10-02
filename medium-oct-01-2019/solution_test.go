@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"strconv"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -33,6 +35,40 @@ func actualCount(message string, pivotMsg string) int {
 
 func decodeStyleCount(message string) int {
 	return actualCount(message, "")
+}
+
+func actualCountWithMemoization(message, pivotMsg string, msgIndex int, memoization *map[int]int) int {
+	if len(message) == 0 {
+		if len(pivotMsg) > 0 {
+			return 1
+		}
+		return 0
+	}
+	if len(message) == 1 {
+		return 1
+	}
+
+	count := 0
+	for i := 0; i < len(message); i++ {
+		pivotMsg := message[:(i + 1)]
+		msgIndex = msgIndex + 1
+		num, _ := strconv.Atoi(pivotMsg)
+		if num > 26 {
+			break
+		}
+		if _, ok := (*memoization)[msgIndex]; !ok {
+			(*memoization)[msgIndex] = actualCountWithMemoization(
+				message[(i+1):len(message)], pivotMsg, msgIndex, memoization)
+		}
+		count += (*memoization)[msgIndex]
+	}
+
+	return count
+}
+
+func decodeStyleCountWithMemoization(message string) int {
+	memoization := map[int]int{}
+	return actualCountWithMemoization(message, "", 0, &memoization)
 }
 
 func Test_EmptyStr(t *testing.T) {
@@ -68,4 +104,23 @@ func Test_12345(t *testing.T) {
 	// 1, 2, 3, 4, 5 || 1, 23, 4, 5
 	// 12, 3, 4, 5
 	assert.Equal(3, decodeStyleCount("12345"))
+}
+
+func Test_VeryLong(t *testing.T) {
+	assert := assert.New(t)
+	str := "111111111111111111111111111111111111111111"
+
+	startTime := time.Now()
+	countWithoutMemoization := decodeStyleCount(str)
+	endTime := time.Now()
+	elapsedTimeWithoutMemoization := (endTime.Sub(startTime)).Milliseconds()
+
+	startTime = time.Now()
+	countWithMemoization := decodeStyleCountWithMemoization(str)
+	endTime = time.Now()
+	elapsedTimeWithMemoization := (endTime.Sub(startTime)).Milliseconds()
+
+	fmt.Printf("W/o memoization: %dms, With memoization: %dms\n", elapsedTimeWithoutMemoization, elapsedTimeWithMemoization)
+
+	assert.Equal(countWithoutMemoization, countWithMemoization)
 }
