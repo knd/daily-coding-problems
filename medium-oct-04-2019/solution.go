@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 )
 
 func readInputFromFile() []string {
@@ -92,6 +93,8 @@ func getRemainingWords(children []*Node, temp string, result *[]string) {
 }
 
 func recommendedWords(word string, trie *Node) []string {
+	startTime := time.Now()
+
 	var result []string
 	pivotNode := getPivotNode(word, 0, trie.children)
 	var remainingWords []string
@@ -103,17 +106,43 @@ func recommendedWords(word string, trie *Node) []string {
 		result = append(result, word+rm)
 	}
 
+	endTime := time.Now()
+	elapsed := endTime.Sub(startTime).Nanoseconds()
+	fmt.Printf("Elapsed time: %dns\n", elapsed)
+
+	return result
+}
+
+func naive(word string, dict []string) []string {
+	startTime := time.Now()
+
+	var result []string
+	for _, w := range dict {
+		if strings.HasPrefix(w, word) {
+			result = append(result, w)
+		}
+	}
+
+	endTime := time.Now()
+	elapsed := endTime.Sub(startTime).Nanoseconds()
+	fmt.Printf("Elapsed time: %dns\n", elapsed)
+
 	return result
 }
 
 func main() {
 	dict := readInputFromFile()
-	trie := buildTrie(dict)
 
-	// printTrie(trie, 0)
+	trie := buildTrie(dict)
 	for {
 		var word string
 		fmt.Scanf("%s", &word)
 		fmt.Printf("You mean: %v\n", recommendedWords(word, trie))
 	}
+
+	// for {
+	// 	var word string
+	// 	fmt.Scanf("%s", &word)
+	// 	fmt.Printf("You mean: %v\n", naive(word, dict))
+	// }
 }
