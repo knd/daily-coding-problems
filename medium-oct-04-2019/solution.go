@@ -133,16 +133,16 @@ func naive(word string, dict []string) []string {
 func main() {
 	dict := readInputFromFile()
 
-	trie := buildTrie(dict)
-	for {
-		var word string
-		fmt.Scanf("%s", &word)
-		fmt.Printf("You mean: %v\n", recommendedWords(word, trie))
-	}
-
+	// trie := buildTrie(dict)
 	// for {
 	// 	var word string
 	// 	fmt.Scanf("%s", &word)
-	// 	fmt.Printf("You mean: %v\n", naive(word, dict))
+	// 	fmt.Printf("You mean: %v\n", recommendedWords(word, trie))
 	// }
+
+	for {
+		var word string
+		fmt.Scanf("%s", &word)
+		fmt.Printf("You mean: %v\n", naive(word, dict))
+	}
 }
